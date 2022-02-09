@@ -25,6 +25,7 @@ final class EstatesExports extends Endpoint
      * Official documentation
      *
      * @param int $office_id ID of the office of which to retrieve estates
+     * @param array $language Whether to include array of languages
      * @param bool $show_representatives Whether to include representative (real
      * estate agent) data
      * @param bool $reset Pass true to retrieve all estates, regardless of
@@ -38,24 +39,19 @@ final class EstatesExports extends Endpoint
      *
      * @return CollectionResponse Traversable collection of items
      */
-    public function list(int $office_id, ?bool $show_representatives = null, ?bool $reset = null): CollectionResponse
-    {
-        $parameters = [
-            'OfficeId' => $office_id,
-        ];
+    public function list(int $office_id, ?array $language = null, ?bool $show_representatives = null, ?bool $reset = null): CollectionResponse
+	{
+		$parameters = [
+			'IsReset' => !is_null($reset) ? $reset : false,
+			'LanguageIds' => !is_null($language) ? $language : '',
+			'OfficeId' => $office_id,
+			'ShowRepresentatives' => !is_null($show_representatives) ? $show_representatives : false,
+		];
 
-        if (!is_null($show_representatives)) {
-            $parameters['ShowRepresentatives'] = $show_representatives;
-        }
-
-        if (!is_null($reset)) {
-            $parameters['IsReset'] = $reset;
-        }
-
-        $request = new CollectionRequest('POST', 'v1/estates/exports/list', $parameters);
-        $request->setResponseKey('estates')->requireAuthentication(true)->allowGreedyCache(true);
-        return new CollectionResponsePaginated($request, $this->getApiAdapter());
-    }
+		$request = new CollectionRequest('POST', 'v1/estates/exports/list', $parameters);
+		$request->setResponseKey('estates')->requireAuthentication(true)->allowGreedyCache(true);
+		return new CollectionResponsePaginated($request, $this->getApiAdapter());
+	}
 
     /**
      * Confirm the publication of an estate. Call this endpoint whenever an
